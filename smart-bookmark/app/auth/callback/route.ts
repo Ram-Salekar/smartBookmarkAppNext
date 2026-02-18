@@ -3,16 +3,15 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const code = searchParams.get("code");
+  const url = new URL(request.url);
+  const code = url.searchParams.get("code");
 
-  const cookieStore = cookies();
-
+  // Create Supabase SSR client with built-in cookie handler
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
-      cookies: cookieStore, // ✅ NEW CORRECT FORMAT
+      cookies: cookies(),  // ← correct cookie store
     }
   );
 
@@ -21,7 +20,7 @@ export async function GET(request: Request) {
   }
 
   return NextResponse.redirect(
-    new URL("/dashboard", request.url),
+    `${url.origin}/dashboard`,
     { status: 303 }
   );
 }
