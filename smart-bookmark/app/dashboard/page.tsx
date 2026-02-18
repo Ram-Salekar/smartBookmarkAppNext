@@ -6,20 +6,42 @@ import { supabase } from "@/lib/supabaseClient";
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true); // ✅ added
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");
   const [bookmarks, setBookmarks] = useState<any[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const router = useRouter();
 
+  // 🔹 Check session on mount
   useEffect(() => {
     const init = async () => {
       const { data } = await supabase.auth.getUser();
+
+      if (!data.user) {
+        router.replace("/"); // ✅ redirect if no user
+        return;
+      }
+
       setUser(data.user);
+      setLoading(false);
     };
 
     init();
-  }, []);
+
+    // 🔹 Listen for auth state changes (important)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session) {
+        router.replace("/");
+      } else {
+        setUser(session.user);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [router]);
 
   useEffect(() => {
     if (!user) return;
@@ -87,6 +109,11 @@ export default function Dashboard() {
     setEditingId(bookmark.id);
   };
 
+  // 🔹 Prevent rendering until auth check completes
+  if (loading) {
+    return <div className="p-10 text-center">Loading...</div>;
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 py-10 px-4">
       <div className="max-w-3xl mx-auto space-y-8">
@@ -110,23 +137,19 @@ export default function Dashboard() {
             placeholder="Bookmark Title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full border rounded-lg px-4 py-2 
-           placeholder-gray-600 text-gray-800
-           focus:outline-none focus:ring-2 focus:ring-black"
+            className="w-full border rounded-lg px-4 py-2"
           />
 
           <input
             placeholder="https://example.com"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            className="w-full border rounded-lg px-4 py-2 
-           placeholder-gray-600 text-gray-800
-           focus:outline-none focus:ring-2 focus:ring-black"
+            className="w-full border rounded-lg px-4 py-2"
           />
 
           <button
             onClick={addOrUpdateBookmark}
-            className="w-full bg-black text-white py-2 rounded-lg hover:bg-gray-800 transition"
+            className="w-full bg-black text-white py-2 rounded-lg"
           >
             {editingId ? "Update Bookmark" : "Add Bookmark"}
           </button>
@@ -142,10 +165,10 @@ export default function Dashboard() {
             bookmarks.map((b) => (
               <div
                 key={b.id}
-                className="bg-white p-5 rounded-2xl shadow-sm hover:shadow-md transition flex justify-between items-center"
+                className="bg-white p-5 rounded-2xl shadow-sm flex justify-between items-center"
               >
-                <div className="space-y-1">
-                  <p className="font-semibold text-gray-800">{b.title}</p>
+                <div>
+                  <p className="font-semibold">{b.title}</p>
                   <a
                     href={b.url}
                     target="_blank"
@@ -158,14 +181,14 @@ export default function Dashboard() {
                 <div className="flex space-x-4 text-sm">
                   <button
                     onClick={() => startEdit(b)}
-                    className="text-yellow-600 hover:text-yellow-800"
+                    className="text-yellow-600"
                   >
                     Edit
                   </button>
 
                   <button
                     onClick={() => deleteBookmark(b.id)}
-                    className="text-red-600 hover:text-red-800"
+                    className="text-red-600"
                   >
                     Delete
                   </button>
