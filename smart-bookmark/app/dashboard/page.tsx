@@ -19,7 +19,7 @@ export default function Dashboard() {
       const { data } = await supabase.auth.getUser();
 
       if (!data.user) {
-        router.replace("/"); // ✅ redirect if no user
+        router.replace("/");
         return;
       }
 
@@ -29,7 +29,6 @@ export default function Dashboard() {
 
     init();
 
-    // 🔹 Listen for auth state changes (important)
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
@@ -109,7 +108,6 @@ export default function Dashboard() {
     setEditingId(bookmark.id);
   };
 
-  // 🔹 Prevent rendering until auth check completes
   if (loading) {
     return <div className="p-10 text-center">Loading...</div>;
   }
@@ -118,7 +116,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-100 py-10 px-4">
       <div className="max-w-3xl mx-auto space-y-8">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-800">My Bookmarks</h1>
+          <h1 className="text-3xl font-bold text-gray-900">My Bookmarks</h1>
           <button
             onClick={logout}
             className="text-sm text-gray-600 hover:text-black"
@@ -129,7 +127,7 @@ export default function Dashboard() {
 
         {/* Form Card */}
         <div className="bg-white p-6 rounded-2xl shadow-md space-y-4">
-          <h2 className="text-lg font-semibold text-gray-700">
+          <h2 className="text-lg font-semibold text-gray-800">
             {editingId ? "Edit Bookmark" : "Add New Bookmark"}
           </h2>
 
@@ -137,19 +135,23 @@ export default function Dashboard() {
             placeholder="Bookmark Title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full border rounded-lg px-4 py-2"
+            className="w-full border border-gray-300 rounded-lg px-4 py-2 
+                       text-gray-900 placeholder-gray-400
+                       focus:outline-none focus:ring-2 focus:ring-black"
           />
 
           <input
             placeholder="https://example.com"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            className="w-full border rounded-lg px-4 py-2"
+            className="w-full border border-gray-300 rounded-lg px-4 py-2 
+                       text-gray-900 placeholder-gray-400
+                       focus:outline-none focus:ring-2 focus:ring-black"
           />
 
           <button
             onClick={addOrUpdateBookmark}
-            className="w-full bg-black text-white py-2 rounded-lg"
+            className="w-full bg-black text-white py-2 rounded-lg hover:bg-gray-800 transition"
           >
             {editingId ? "Update Bookmark" : "Add Bookmark"}
           </button>
@@ -165,10 +167,10 @@ export default function Dashboard() {
             bookmarks.map((b) => (
               <div
                 key={b.id}
-                className="bg-white p-5 rounded-2xl shadow-sm flex justify-between items-center"
+                className="bg-white p-5 rounded-2xl shadow-sm hover:shadow-md transition flex justify-between items-center"
               >
                 <div>
-                  <p className="font-semibold">{b.title}</p>
+                  <p className="font-semibold text-gray-900">{b.title}</p>
                   <a
                     href={b.url}
                     target="_blank"
@@ -181,14 +183,14 @@ export default function Dashboard() {
                 <div className="flex space-x-4 text-sm">
                   <button
                     onClick={() => startEdit(b)}
-                    className="text-yellow-600"
+                    className="text-yellow-600 hover:text-yellow-800"
                   >
                     Edit
                   </button>
 
                   <button
                     onClick={() => deleteBookmark(b.id)}
-                    className="text-red-600"
+                    className="text-red-600 hover:text-red-800"
                   >
                     Delete
                   </button>
