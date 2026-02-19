@@ -6,12 +6,11 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
 
-  // Create Supabase SSR client with built-in cookie handler
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
-      cookies: cookies(),  // ← correct cookie store
+      cookies: cookies(),
     }
   );
 
@@ -20,7 +19,7 @@ export async function GET(request: Request) {
   }
 
   return NextResponse.redirect(
-    `${url.origin}/dashboard`,
+    new URL("/dashboard", request.url),
     { status: 303 }
   );
 }
